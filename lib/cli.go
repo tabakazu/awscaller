@@ -14,7 +14,7 @@ import (
 
 const appName string = "awscaller"
 const appUsage string = "display aws api caller infomation"
-const appVersion string = "0.0.1"
+const appVersion string = "0.0.2"
 
 // CliApp return *cli.App
 func CliApp() *cli.App {
@@ -22,22 +22,22 @@ func CliApp() *cli.App {
 	app.Name = appName
 	app.Usage = appUsage
 	app.Version = appVersion
-	app.Action = func(c *cli.Context) error {
-		callerID := getCallerIdentity()
-		fmt.Printf("- Account  :  %v\n", *callerID.Account)
-		fmt.Printf("- UserId   :  %v\n", *callerID.UserId)
-		userName := regexp.MustCompile(`^(\S.*)\/`).ReplaceAllString(*callerID.Arn, "")
-		fmt.Printf("- UserName :  %v\n", userName)
-
-		listPolicies := listAttachedUserPolicies(userName)
-		fmt.Println("- AttachedPolicies :")
-		for _, policy := range listPolicies.AttachedPolicies {
-			fmt.Printf("    - %v\n", *policy.PolicyName)
-		}
-		return nil
-	}
-
+	app.Action = mainCmd
 	return app
+}
+
+func mainCmd(c *cli.Context) {
+	callerID := getCallerIdentity()
+	fmt.Printf("- Account  :\t%v\n", *callerID.Account)
+	fmt.Printf("- UserId   :\t%v\n", *callerID.UserId)
+	userName := regexp.MustCompile(`^(\S.*)\/`).ReplaceAllString(*callerID.Arn, "")
+	fmt.Printf("- UserName :\t%v\n", userName)
+
+	listPolicies := listAttachedUserPolicies(userName)
+	fmt.Println("- AttachedPolicies :")
+	for _, policy := range listPolicies.AttachedPolicies {
+		fmt.Printf("\t- %v\n", *policy.PolicyName)
+	}
 }
 
 func listAttachedUserPolicies(userName string) *iam.ListAttachedUserPoliciesOutput {
